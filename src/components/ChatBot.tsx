@@ -11,6 +11,7 @@ import {
   Hash,
   ShieldCheck,
   KeyRound,
+  Trash2,
 } from 'lucide-react'
 
 type Msg = { role: 'user' | 'assistant'; content: string }
@@ -101,24 +102,32 @@ export default function ChatBot() {
     abortRef.current = new AbortController()
     let assistantText = ''
 
-    await streamChat(
-      nextMsgs,
-      (chunk) => {
-        assistantText += chunk
-        setMessages((prev) => {
-          const last = prev[prev.length - 1]
-          if (last?.role === 'assistant') {
-            return prev.map((m, i) =>
-              i === prev.length - 1 ? { ...m, content: assistantText } : m,
-            )
-          }
-          return [...prev, { role: 'assistant', content: assistantText }]
-        })
-      },
-      () => setLoading(false),
-      (msg) => { setError(msg); setLoading(false) },
-      abortRef.current.signal,
-    )
+    try {
+      await streamChat(
+        nextMsgs,
+        (chunk) => {
+          assistantText += chunk
+          setMessages((prev) => {
+            const last = prev[prev.length - 1]
+            if (last?.role === 'assistant') {
+              return prev.map((m, i) =>
+                i === prev.length - 1 ? { ...m, content: assistantText } : m,
+              )
+            }
+            return [...prev, { role: 'assistant', content: assistantText }]
+          })
+        },
+        () => setLoading(false),
+        (msg) => { setError(msg); setLoading(false) },
+        abortRef.current.signal,
+      )
+    } catch (e: unknown) {
+      // Ignore abort errors (user cancelled)
+      if (e instanceof Error && e.name !== 'AbortError') {
+        setError('Connection error. Please try again.')
+      }
+      setLoading(false)
+    }
   }
 
   const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -133,13 +142,22 @@ export default function ChatBot() {
 
       {/* Header */}
       <div className="flex items-center gap-3 px-5 py-4 border-b border-border bg-card shrink-0">
-        <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center">
+        <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shrink-0">
           <Sparkles className="w-5 h-5 text-primary-foreground" />
         </div>
-        <div>
+        <div className="flex-1">
           <p className="font-bold text-foreground text-sm leading-tight">Encryption Assistant</p>
           <p className="text-xs text-muted-foreground">Ask me anything about encryption &amp; security</p>
         </div>
+        {messages.length > 0 && (
+          <button
+            onClick={() => { setMessages([]); setError('') }}
+            title="Clear chat"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Messages */}
