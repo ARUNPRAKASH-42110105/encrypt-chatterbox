@@ -142,13 +142,22 @@ export default function ChatBot() {
 
       {/* Header */}
       <div className="flex items-center gap-3 px-5 py-4 border-b border-border bg-card shrink-0">
-        <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center">
+        <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shrink-0">
           <Sparkles className="w-5 h-5 text-primary-foreground" />
         </div>
-        <div>
+        <div className="flex-1">
           <p className="font-bold text-foreground text-sm leading-tight">Encryption Assistant</p>
           <p className="text-xs text-muted-foreground">Ask me anything about encryption &amp; security</p>
         </div>
+        {messages.length > 0 && (
+          <button
+            onClick={() => { setMessages([]); setError('') }}
+            title="Clear chat"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Messages */}
