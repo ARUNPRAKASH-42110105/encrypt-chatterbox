@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
@@ -9,6 +10,7 @@ export default {
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
+          glow: 'hsl(var(--primary-glow))',
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
@@ -32,6 +34,14 @@ export default {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',
         },
+      },
+      backgroundImage: {
+        'gradient-primary': 'var(--gradient-primary)',
+      },
+      boxShadow: {
+        glow: 'var(--shadow-glow)',
+        card: 'var(--shadow-card)',
+        float: 'var(--shadow-float)',
       },
     },
   },
