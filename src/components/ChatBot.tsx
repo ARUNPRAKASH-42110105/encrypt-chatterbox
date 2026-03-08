@@ -11,6 +11,7 @@ import {
   Hash,
   ShieldCheck,
   KeyRound,
+  Trash2,
 } from 'lucide-react'
 
 type Msg = { role: 'user' | 'assistant'; content: string }
