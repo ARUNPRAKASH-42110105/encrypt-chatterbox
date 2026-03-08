@@ -101,24 +101,32 @@ export default function ChatBot() {
     abortRef.current = new AbortController()
     let assistantText = ''
 
-    await streamChat(
-      nextMsgs,
-      (chunk) => {
-        assistantText += chunk
-        setMessages((prev) => {
-          const last = prev[prev.length - 1]
-          if (last?.role === 'assistant') {
-            return prev.map((m, i) =>
-              i === prev.length - 1 ? { ...m, content: assistantText } : m,
-            )
-          }
-          return [...prev, { role: 'assistant', content: assistantText }]
-        })
-      },
-      () => setLoading(false),
-      (msg) => { setError(msg); setLoading(false) },
-      abortRef.current.signal,
-    )
+    try {
+      await streamChat(
+        nextMsgs,
+        (chunk) => {
+          assistantText += chunk
+          setMessages((prev) => {
+            const last = prev[prev.length - 1]
+            if (last?.role === 'assistant') {
+              return prev.map((m, i) =>
+                i === prev.length - 1 ? { ...m, content: assistantText } : m,
+              )
+            }
+            return [...prev, { role: 'assistant', content: assistantText }]
+          })
+        },
+        () => setLoading(false),
+        (msg) => { setError(msg); setLoading(false) },
+        abortRef.current.signal,
+      )
+    } catch (e: unknown) {
+      // Ignore abort errors (user cancelled)
+      if (e instanceof Error && e.name !== 'AbortError') {
+        setError('Connection error. Please try again.')
+      }
+      setLoading(false)
+    }
   }
 
   const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
