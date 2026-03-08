@@ -18,10 +18,10 @@ import {
 
 const MAGIC = new TextEncoder().encode('ENC1') // 4-byte header tag
 
-async function deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey> {
+async function deriveKey(password: string, salt: Uint8Array<ArrayBuffer>): Promise<CryptoKey> {
   const raw = await crypto.subtle.importKey(
     'raw',
-    new TextEncoder().encode(password),
+    new TextEncoder().encode(password) as unknown as ArrayBuffer,
     'PBKDF2',
     false,
     ['deriveKey'],
