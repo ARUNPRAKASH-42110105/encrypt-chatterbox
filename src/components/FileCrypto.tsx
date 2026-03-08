@@ -36,9 +36,13 @@ async function deriveKey(password: string, salt: Uint8Array<ArrayBuffer>): Promi
 }
 
 async function encryptFile(file: File, password: string): Promise<Blob> {
-  const salt = crypto.getRandomValues(new Uint8Array(16))
-  const iv = crypto.getRandomValues(new Uint8Array(12))
-  const key = await deriveKey(password, salt)
+  const saltBuf = new ArrayBuffer(16)
+  const ivBuf = new ArrayBuffer(12)
+  const salt = new Uint8Array(saltBuf)
+  const iv = new Uint8Array(ivBuf)
+  crypto.getRandomValues(salt)
+  crypto.getRandomValues(iv)
+  const key = await deriveKey(password, salt as Uint8Array<ArrayBuffer>)
   const plaintext = await file.arrayBuffer()
   const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, plaintext)
   // Layout: MAGIC(4) | salt(16) | iv(12) | ciphertext
@@ -51,11 +55,12 @@ async function encryptFile(file: File, password: string): Promise<Blob> {
 }
 
 async function decryptFile(file: File, password: string): Promise<Blob> {
-  const buf = new Uint8Array(await file.arrayBuffer())
+  const raw = await file.arrayBuffer()
+  const buf = new Uint8Array(raw)
   const magic = buf.slice(0, 4)
   if (magic.toString() !== MAGIC.toString()) throw new Error('Not an encrypted file or wrong format.')
-  const salt = buf.slice(4, 20)
-  const iv = buf.slice(20, 32)
+  const salt = buf.slice(4, 20) as Uint8Array<ArrayBuffer>
+  const iv = buf.slice(20, 32) as Uint8Array<ArrayBuffer>
   const ciphertext = buf.slice(32)
   const key = await deriveKey(password, salt)
   let plaintext: ArrayBuffer
